@@ -9,7 +9,8 @@ const allusers = {}
 const allrooms = []
 
 const io = new Server(httpserver, {
-    cors: "http://localhost:5173/"
+    // cors: "http://localhost:5173/"
+    cors: "https://tic-tac-toe-web-socket-frontend.vercel.app/"
 })
 
 io.on("connection", (socket) => {
