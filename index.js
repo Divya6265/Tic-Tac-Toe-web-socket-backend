@@ -10,8 +10,8 @@ const allusers = {}
 const allrooms = []
 
 const io = new Server(httpserver, {
-    cors: "http://localhost:5173/"
-    // cors: "https://tic-tac-toe-web-socket-frontend.vercel.app/"
+    // cors: "http://localhost:5173/"
+    cors: "https://tic-tac-toe-web-socket-frontend.vercel.app/"
 })
 
 io.on("connection", (socket) => {
@@ -25,6 +25,10 @@ io.on("connection", (socket) => {
     socket.on("request_to_play", (data) => {
         const currentPlayer = allusers[socket.id]
         currentPlayer.PlayerName = data.PlayerName
+
+        if(!(data.playing)){
+            allusers[socket.id].playing = data.playing
+        }
 
         let opponentPlayer;
 
@@ -79,6 +83,7 @@ io.on("connection", (socket) => {
         }
         for (let index = 0; index < allrooms.length; index++) {
             const { player1, player2 } = allrooms[index];
+            allrooms.splice(index, 1);
             if (player1.socket.id === socket.id) {
                 player2.socket.emit("opponentLeftTheRoom", {
                     opponentLeft: true
@@ -113,7 +118,8 @@ io.on("connection", (socket) => {
                     })
                 })
                 break
-            } else {
+            }
+            if (player2.socket.id === socket.id) {
                 player1.socket.emit("accept_or_Denai", {
                     rematchRequested: true
                 })
