@@ -1,3 +1,4 @@
+
 const { createServer } = require("http")
 const express = require('express')
 const { Server } = require('socket.io')
@@ -9,8 +10,8 @@ const allusers = {}
 const allrooms = []
 
 const io = new Server(httpserver, {
-    // cors: "http://localhost:5173/"
-    cors: "https://tic-tac-toe-web-socket-frontend.vercel.app/"
+    cors: "http://localhost:5173/"
+    // cors: "https://tic-tac-toe-web-socket-frontend.vercel.app/"
 })
 
 io.on("connection", (socket) => {
@@ -55,7 +56,7 @@ io.on("connection", (socket) => {
             currentPlayer.socket.on("playerMoveFromClient", (data) => {
                 opponentPlayer.socket.emit("playerMoveFromServer", {
                     ...data
-                })
+                }) 
             })
 
             opponentPlayer.socket.on("playerMoveFromClient", (data) => {
@@ -93,8 +94,48 @@ io.on("connection", (socket) => {
 
         }
     })
+
+    socket.on("request_to_replay", () => {
+        for (let index = 0; index < allrooms.length; index++) {
+            const { player1, player2 } = allrooms[index];
+            if (player1.socket.id === socket.id) {
+                player2.socket.emit("accept_or_Denai", {
+                    rematchRequested: true
+                })
+                player2.socket.on("accept_or_Denai_respo", (data) => {
+                    player1.socket.emit("reset_game", {
+                        currentPlayer : player1.PlayerName,
+                        responce : data.responce
+                    })
+                    player2.socket.emit("reset_game", {
+                        currentPlayer : player1.PlayerName,
+                        responce : data.responce
+                    })
+                })
+                break
+            } else {
+                player1.socket.emit("accept_or_Denai", {
+                    rematchRequested: true
+                })
+                player1.socket.on("accept_or_Denai_respo", (data) => {
+                    player1.socket.emit("reset_game", {
+                        currentPlayer : player2.PlayerName,
+                        responce : data.responce
+                    })
+                    player2.socket.emit("reset_game", {
+                        currentPlayer : player2.PlayerName,
+                        responce : data.responce
+                    })
+                })
+                break
+            }
+
+        }
+    })
 })
+
 
 httpserver.listen(8000, () => {
     console.log("server is up and running on port number", 8000)
 })
+
